@@ -16,11 +16,28 @@ import createRoomSchema from "@/zod-schemas/createRoomSchema";
 import { Input } from "@/components/ui/input";
 import SubmitButton from "@/components/global/SubmitButton";
 import { useRouter } from "next/navigation";
+import { useSocket } from "@/providers/SocketProvider";
+import { useEffect } from "react";
 
 type CreateRoomFormProps = {};
 
 const CreateRoomForm = ({}: CreateRoomFormProps) => {
   const router = useRouter();
+
+  const { socket } = useSocket();
+
+  // Listen for socket events
+  const handleRoomJoined = (data: { userId: string; roomId: string }) => {
+    router.push(`/room/${data.roomId}`);
+  };
+
+  useEffect(() => {
+    socket.on("joined-room", handleRoomJoined);
+
+    return () => {
+      socket.off("joined-room", handleRoomJoined);
+    };
+  }, [socket]);
 
   const form = useForm<z.infer<typeof createRoomSchema>>({
     resolver: zodResolver(createRoomSchema),
@@ -30,7 +47,7 @@ const CreateRoomForm = ({}: CreateRoomFormProps) => {
 
   const onSubmit = async (data: z.infer<typeof createRoomSchema>) => {
     const roomId = crypto.randomUUID();
-    router.push(`/room/${roomId}`);
+    socket.emit("join-room", { roomId, userId: data.userId });
   };
 
   return (

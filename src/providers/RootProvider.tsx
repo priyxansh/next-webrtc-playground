@@ -1,3 +1,4 @@
+import SocketProvider from "./SocketProvider";
 import { ThemeProvider } from "./ThemeProvider";
 
 type RootProviderProps = {
@@ -12,7 +13,7 @@ const RootProvider = ({ children }: RootProviderProps) => {
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <SocketProvider>{children}</SocketProvider>
     </ThemeProvider>
   );
 };
