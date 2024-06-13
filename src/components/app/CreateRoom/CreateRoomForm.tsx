@@ -15,10 +15,13 @@ import {
 import createRoomSchema from "@/zod-schemas/createRoomSchema";
 import { Input } from "@/components/ui/input";
 import SubmitButton from "@/components/global/SubmitButton";
+import { useRouter } from "next/navigation";
 
 type CreateRoomFormProps = {};
 
 const CreateRoomForm = ({}: CreateRoomFormProps) => {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof createRoomSchema>>({
     resolver: zodResolver(createRoomSchema),
   });
@@ -26,7 +29,8 @@ const CreateRoomForm = ({}: CreateRoomFormProps) => {
   const { isSubmitting, isDirty } = form.formState;
 
   const onSubmit = async (data: z.infer<typeof createRoomSchema>) => {
-    console.log(data);
+    const roomId = crypto.randomUUID();
+    router.push(`/room/${roomId}`);
   };
 
   return (
