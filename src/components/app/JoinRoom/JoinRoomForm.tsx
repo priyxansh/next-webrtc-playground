@@ -12,16 +12,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import createRoomSchema from "@/zod-schemas/createRoomSchema";
 import { Input } from "@/components/ui/input";
 import SubmitButton from "@/components/global/SubmitButton";
 import { useRouter } from "next/navigation";
 import { useSocket } from "@/providers/SocketProvider";
 import { useEffect } from "react";
+import joinRoomSchema from "@/zod-schemas/joinRoomSchema";
 
-type CreateRoomFormProps = {};
+type JoinRoomFormProps = {};
 
-const CreateRoomForm = ({}: CreateRoomFormProps) => {
+const JoinRoomForm = ({}: JoinRoomFormProps) => {
   const router = useRouter();
 
   const { socket } = useSocket();
@@ -32,22 +32,22 @@ const CreateRoomForm = ({}: CreateRoomFormProps) => {
   };
 
   useEffect(() => {
-    socket.on("joined-room", handleRoomJoined); 
+    socket.on("joined-room", handleRoomJoined);
 
     return () => {
       socket.off("joined-room", handleRoomJoined);
     };
   }, [socket]);
 
-  const form = useForm<z.infer<typeof createRoomSchema>>({
-    resolver: zodResolver(createRoomSchema),
+  const form = useForm<z.infer<typeof joinRoomSchema>>({
+    resolver: zodResolver(joinRoomSchema),
   });
 
   const { isSubmitting, isDirty } = form.formState;
 
-  const onSubmit = async (data: z.infer<typeof createRoomSchema>) => {
-    const roomId = crypto.randomUUID();
-    socket.emit("join-room", { roomId, userId: data.userId });
+  const onSubmit = async (data: z.infer<typeof joinRoomSchema>) => {
+    socket.emit("join-room", { roomId: data.roomId, userId: data.userId });
+    console.log(data);
   };
 
   return (
@@ -69,15 +69,28 @@ const CreateRoomForm = ({}: CreateRoomFormProps) => {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="roomId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Room ID</FormLabel>
+              <FormControl>
+                <Input placeholder="unique roomId here" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <SubmitButton
           isSubmitting={isSubmitting}
           isDirty={isDirty}
-          text="Create Room"
-          submittingText="Creating Room..."
+          text="Join Room"
+          submittingText="Joining Room..."
         />
       </form>
     </Form>
   );
 };
 
-export default CreateRoomForm;
+export default JoinRoomForm;
